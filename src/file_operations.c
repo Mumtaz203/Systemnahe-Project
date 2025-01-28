@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <dirent.h>
-#include "file_operations.h"
+#include "../include/file_operations.h"
 
-void traverse_directory(const char *path) {
+
+void traverse_directorysimple(const char *path) {
     DIR *dir = opendir(path);
     if (dir == NULL) {
         perror("Failed to open directory");

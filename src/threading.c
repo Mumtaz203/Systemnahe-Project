@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
-#include "threading.h"
+#include "../include/threading.h"
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
