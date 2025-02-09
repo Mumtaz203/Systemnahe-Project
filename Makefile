@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -Wall -g -I../include
+CFLAGS = -Wall -g -I../include -DDEBUG
 
 
 SRC_DIR = ../src

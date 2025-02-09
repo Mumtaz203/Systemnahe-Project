@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
         printf("Usage: ./program [options] <directory>\n");
         return 1;
     }
-
+show_last_modified=0;
     char *directory = argv[argc - 1];
     parse_arguments(argc, argv);
 if (show_last_modified) {
