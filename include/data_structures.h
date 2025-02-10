@@ -6,11 +6,9 @@ typedef struct Node {
     struct Node *next;
 } Node;
 
-
 Node* create_node(const char *data);
-
-
 void free_list(Node *head);
+void append_node(Node **head, const char *data);  // 💡 Eksik fonksiyon tanımı eklendi
 
 #endif
 

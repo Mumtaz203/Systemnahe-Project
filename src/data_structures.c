@@ -32,4 +32,18 @@ void free_list(Node *head) {
 }
 
 
+void append_node(Node **head, const char *data) {
+    Node *new_node = create_node(data);
+    if (!new_node) return;
+
+    if (*head == NULL) {
+        *head = new_node;
+    } else {
+        Node *temp = *head;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = new_node;
+    }
+}
 

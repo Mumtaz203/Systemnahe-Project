@@ -1,39 +1,40 @@
-
 CC = gcc
-CFLAGS = -Wall -g -I../include -DDEBUG
+CFLAGS = -Wall -g -I../include -pthread
 
+SRC_DIR = src
+INCLUDE_DIR = include
+TEST_DIR = tests
 
-SRC_DIR = ../src
-INCLUDE_DIR = ../include
-TEST_DIR = ../tests
-
-
-SRCS = src/data_structures.c src/file_operations.c src/main.c src/threading.c src/utils.c src/traverse_directory.c
-
+SRCS = $(SRC_DIR)/data_structures.c $(SRC_DIR)/file_operations.c $(SRC_DIR)/main.c $(SRC_DIR)/threading.c $(SRC_DIR)/utils.c $(SRC_DIR)/traverse_directory.c
 OBJS = $(SRCS:.c=.o)
 
-TARGET = program
-TEST_TARGET = test
 
+OBJS_TEST = $(SRC_DIR)/data_structures.o $(SRC_DIR)/threading.o $(SRC_DIR)/utils.o $(SRC_DIR)/traverse_directory.o $(SRC_DIR)/file_operations.o
+
+TARGET = program
+TEST_TARGET = test_program
+
+TEST_LIBS = -lcunit
 
 all: $(TARGET)
-
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS)
 
-
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Test derlemesi
+$(TEST_TARGET): $(TEST_DIR)/test_cases.c $(OBJS_TEST)
+	$(CC) $(CFLAGS) -o $@ $(TEST_DIR)/test_cases.c $(OBJS_TEST) $(TEST_LIBS)
 
-$(TEST_TARGET): $(TEST_DIR)/test_cases.c $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(TEST_DIR)/test_cases.c $(OBJS)
+test: $(TEST_TARGET)
+	./$(TEST_TARGET)
+	make clean_test  
 
 
-install: $(TARGET)
-	sudo cp $(TARGET) /usr/local/bin/
-
+clean_test:
+	rm -f $(TEST_TARGET)
 
 clean:
 	rm -f $(SRC_DIR)/*.o $(TARGET) $(TEST_TARGET)

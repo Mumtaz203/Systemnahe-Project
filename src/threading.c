@@ -1,26 +1,49 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../include/threading.h"
+#include "../include/file_operations.h"
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+#define MAX_THREADS 10  
+
+pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+typedef struct {
+    char path[1024];
+} ThreadArgs;
 
 void* thread_function(void *arg) {
-    char *message = (char *)arg;
-
-    pthread_mutex_lock(&mutex);
-    printf("Thread says: %s\n", message);
-    pthread_mutex_unlock(&mutex);
-
+    ThreadArgs *args = (ThreadArgs *)arg;
+    
+    
+    traverse_directory(args->path);
+    
+    free(arg);  
     return NULL;
 }
 
-void create_threads() {
-    pthread_t thread1, thread2;
+void create_threads(int num_dirs, char *directories[]) {
+    pthread_t threads[MAX_THREADS];
+    int i;
 
-    pthread_create(&thread1, NULL, thread_function, "Hello from Thread 1");
-    pthread_create(&thread2, NULL, thread_function, "Hello from Thread 2");
+    for (i = 0; i < num_dirs; i++) {
+        ThreadArgs *args = malloc(sizeof(ThreadArgs));
+        if (!args) {
+            perror("Failed to allocate memory for thread args");
+            continue;
+        }
+        strncpy(args->path, directories[i], sizeof(args->path) - 1);
+        args->path[sizeof(args->path) - 1] = '\0';
 
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
+        if (pthread_create(&threads[i], NULL, thread_function, args) != 0) {
+            perror("Failed to create thread");
+            free(args);
+        }
+    }
+
+    for (i = 0; i < num_dirs; i++) {
+        pthread_join(threads[i], NULL);
+    }
 }
 

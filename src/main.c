@@ -8,20 +8,22 @@
 
 extern int show_last_modified;
 
-
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        printf("Usage: ./program [options] <directory>\n");
+        printf("Usage: ./program [options] <directory1> <directory2> ...\n");
         return 1;
     }
-show_last_modified=0;
-    char *directory = argv[argc - 1];
-    parse_arguments(argc, argv);
-if (show_last_modified) {
-        printf("Listing files with last modification time:\n");
+
+    char *directories[10]; 
+    int num_dirs = 0;
+
+    parse_arguments(argc, argv, &num_dirs, directories);
+
+    if (num_dirs > 0) {
+        create_threads(num_dirs, directories);
+    } else {
+        printf("No directories specified.\n");
     }
-    
-    traverse_directory(directory);
 
     return 0;
 }
