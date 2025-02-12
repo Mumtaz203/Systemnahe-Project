@@ -16,7 +16,8 @@ extern int show_list_mode;
 extern int recursive_mode;
 extern pthread_mutex_t list_mutex;
 
-#define MAX_FILES 1024  // Maksimum dosya sayısı
+#define MAX_FILES 1024  
+#define MAX_SUBDIRS 100  
 
 void* traverse_directory_thread(void *arg);
 
@@ -30,13 +31,19 @@ typedef struct {
     gid_t gid;
 } FileEntry;
 
-// Dosyaları tarihe göre sıralayan karşılaştırma fonksiyonu
+// 📌 Dosyaları tarihe göre sıralayan fonksiyon (Azalan sıralama)
 int compare_mtime(const void *a, const void *b) {
     FileEntry *fileA = (FileEntry *)a;
     FileEntry *fileB = (FileEntry *)b;
-    return (fileB->mtime - fileA->mtime); // Azalan sıraya göre sıralar
+    return (fileB->mtime - fileA->mtime);
 }
 
+// 📌 Dizinleri alfabetik sıraya göre sıralayan fonksiyon
+int compare_name(const void *a, const void *b) {
+    return strcmp(*(const char **)a, *(const char **)b);
+}
+
+// 📌 Yetkileri yazdıran fonksiyon
 void print_permissions(mode_t mode) {
     printf((S_ISDIR(mode)) ? "d" : "-");
     printf((mode & S_IRUSR) ? "r" : "-");
@@ -50,6 +57,7 @@ void print_permissions(mode_t mode) {
     printf((mode & S_IXOTH) ? "x " : "- ");
 }
 
+// 📌 Ana traverse fonksiyonu
 int traverse_directory(const char *path) {
     DIR *dir = opendir(path);
     if (dir == NULL) {
@@ -59,18 +67,23 @@ int traverse_directory(const char *path) {
 
     struct dirent *entry;
     struct stat file_stat;
-    pthread_t threads[100];
-    int thread_count = 0;
-    char *subdirs[100];
+    char *subdirs[MAX_SUBDIRS];  // Alt dizinleri saklamak için
     int subdir_count = 0;
-    FileEntry files[MAX_FILES];
+
+    // 📌 Dosyaları dinamik olarak tutuyoruz
+    FileEntry *files = malloc(MAX_FILES * sizeof(FileEntry));
+    if (!files) {
+        perror("Memory allocation failed");
+        closedir(dir);
+        return -1;
+    }
     int file_count = 0;
 
     printf("\n📂 %s:\n", path);
     pthread_mutex_lock(&list_mutex);
 
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] == '.') continue;
+        if (entry->d_name[0] == '.') continue;  // Gizli dosyaları atla
 
         char full_path[1024];
         snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
@@ -88,8 +101,10 @@ int traverse_directory(const char *path) {
             }
 
             if (recursive_mode && S_ISDIR(file_stat.st_mode)) {
-                subdirs[subdir_count] = strdup(full_path);
-                subdir_count++;
+                if (subdir_count < MAX_SUBDIRS) {
+                    subdirs[subdir_count] = strdup(full_path);
+                    subdir_count++;
+                }
             }
         } else {
             perror("Failed to get file stats");
@@ -99,12 +114,12 @@ int traverse_directory(const char *path) {
     pthread_mutex_unlock(&list_mutex);
     closedir(dir);
 
-    // Eğer -T seçiliyse, dosyaları tarihe göre sırala
+    // 📌 Eğer -T seçiliyse, dosyaları tarihe göre sıralıyoruz
     if (show_last_modified) {
         qsort(files, file_count, sizeof(FileEntry), compare_mtime);
     }
 
-    // Sıralanmış dosya listesini yazdır
+    // 📌 Dosyaları ekrana yazdır (alt dizinler hariç)
     for (int i = 0; i < file_count; i++) {
         if (show_list_mode) {
             print_permissions(files[i].mode);
@@ -114,40 +129,38 @@ int traverse_directory(const char *path) {
             printf("%-8s %-8s ", pw->pw_name, gr->gr_name);
             printf("%8lld ", (long long)files[i].size);
             if (show_last_modified) {
-                printf("%s ", ctime(&files[i].mtime));
+                char time_str[20];
+                strftime(time_str, sizeof(time_str), "%b %d %H:%M:%S %Y", localtime(&files[i].mtime));
+                printf("%s ", time_str);
             }
             printf("%s\n", files[i].name);
         } else if (show_last_modified) {
-            printf("%-30s %s", files[i].name, ctime(&files[i].mtime));
+            char time_str[20];
+            strftime(time_str, sizeof(time_str), "%b %d %H:%M:%S %Y", localtime(&files[i].mtime));
+            printf("%-30s %s\n", files[i].name, time_str);
         } else {
             printf("%s\n", files[i].name);
         }
     }
 
-    // Rekürsif olarak alt dizinlere gir
-    for (int i = 0; i < subdir_count; i++) {
-        printf("\n🔍 Entering directory: %s\n", subdirs[i]);
+    fflush(stdout);  // 📌 Çıktıyı hemen yazdır!
 
-        if (pthread_create(&threads[thread_count], NULL, traverse_directory_thread, subdirs[i]) == 0) {
-            thread_count++;
-        } else {
-            perror("Failed to create thread for subdirectory");
-            free(subdirs[i]);
-        }
+    free(files);  // 📌 Bellek sızıntısını önlemek için free()
+
+    // 📌 **ALT DİZİNLERİ GEZİYORUZ (SIRALI OLARAK)**
+    if (subdir_count > 0) {
+        qsort(subdirs, subdir_count, sizeof(char *), compare_name);
     }
 
-    // Thread'lerin tamamlanmasını bekle
-    for (int i = 0; i < thread_count; i++) {
-        pthread_join(threads[i], NULL);
+    for (int i = 0; i < subdir_count; i++) {
+        printf("\n🔍 Entering directory: %s\n", subdirs[i]);
+        fflush(stdout);  // 📌 Çıktının sırasını bozmamak için!
+
+        traverse_directory(subdirs[i]);
+
+        free(subdirs[i]);  // 📌 Bellek sızıntısını engelle!
     }
 
     return 0;
-}
-
-void* traverse_directory_thread(void *arg) {
-    char *path = (char *)arg;
-    traverse_directory(path);
-    free(path);
-    return NULL;
 }
 
