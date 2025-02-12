@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
-#include <unistd.h>   
+#include <unistd.h>
 #include "../include/file_operations.h"
 #include "../include/utils.h"
 #include "../include/threading.h"
@@ -44,7 +44,7 @@ int compare_mtime(const void *a, const void *b) {
 int compare_name(const void *a, const void *b) {
     return strcmp(((FileEntry *)a)->name, ((FileEntry *)b)->name);
 }
-
+  
 void print_permissions(mode_t mode) {
     printf((S_ISDIR(mode)) ? "d" : "-");
     printf((mode & S_IRUSR) ? "r" : "-");
@@ -58,16 +58,16 @@ void print_permissions(mode_t mode) {
     printf((mode & S_IXOTH) ? "x " : "- ");
 }
 
-// ✅ Dizin içeriğini tarama fonksiyonu (Thread güvenli)
+// Dizin içeriğini tarama fonksiyonu (Thread güvenli)
 int traverse_directory(const char *path) {
-    usleep(5000);  
+    usleep(5000);
 
     DIR *dir = opendir(path);
     if (dir == NULL) {
         perror("Failed to open directory");
         return -1;
     }
-
+    
     struct dirent *entry;
     struct stat file_stat;
     char *subdirs[MAX_SUBDIRS];
@@ -88,8 +88,8 @@ int traverse_directory(const char *path) {
 
         char full_path[1024];
         snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
-
-        if (stat(full_path, &file_stat) == 0) {
+    
+    if (stat(full_path, &file_stat) == 0) {
             if (file_count < MAX_FILES) {
                 strcpy(files[file_count].name, entry->d_name);
                 files[file_count].mtime = file_stat.st_mtime;
@@ -110,7 +110,7 @@ int traverse_directory(const char *path) {
         }
     }
     closedir(dir);
-
+    
     if (show_last_modified) {
         qsort(files, file_count, sizeof(FileEntry), compare_mtime);
     } else {
@@ -118,26 +118,40 @@ int traverse_directory(const char *path) {
     }
 
     pthread_mutex_lock(&list_mutex);
-    printf("\n🔍 Entering directory (threaded): %s\n", path);
+printf("\n🔍 Entering directory (threaded): %s\n", path);
 
-    for (int i = 0; i < file_count; i++) {
-        if (show_list_mode) {  
-            print_permissions(files[i].mode);
-            printf(" %3ld ", (long)files[i].nlink);
-            struct passwd *pw = getpwuid(files[i].uid);
-            struct group *gr = getgrgid(files[i].gid);
-            printf(" %-8s %-8s %8lld ", pw->pw_name, gr->gr_name, (long long)files[i].size);
-        }
-        if (show_last_modified) {  
-            char time_str[20];
-            strftime(time_str, sizeof(time_str), "%b %d %H:%M:%S %Y", localtime(&files[i].mtime));
-            printf(" %s ", time_str);
-        }
-        printf("%s\n", files[i].name);
+// "total" hesaplama (dosya boyutu yerine `st_blocks` kullan)
+long long total_blocks = 0;
+for (int i = 0; i < file_count; i++) {
+    struct stat file_stat;
+    char full_path[1024];
+    snprintf(full_path, sizeof(full_path), "%s/%s", path, files[i].name);
+
+    if (stat(full_path, &file_stat) == 0) {
+        total_blocks += file_stat.st_blocks;
     }
-    pthread_mutex_unlock(&list_mutex);
+}
 
-    for (int i = 0; i < subdir_count; i++) {
+printf("total %lld\n", total_blocks / 2);  // `ls -l` formatındaki "total" (512-byte blokları 1K'ya çevirerek)
+
+// Dosya listeleme işlemi
+for (int i = 0; i < file_count; i++) {
+    if (show_list_mode) {
+        print_permissions(files[i].mode);  // İzinleri göster (drwxr-xr-x gibi)
+        printf(" %3ld ", (long)files[i].nlink);  //  Bağlantı sayısı
+        struct passwd *pw = getpwuid(files[i].uid);
+        struct group *gr = getgrgid(files[i].gid);
+        printf(" %-8s %-8s %8lld ", pw->pw_name, gr->gr_name, (long long)files[i].size);
+
+        char time_str[20];
+        strftime(time_str, sizeof(time_str), "%b %d %H:%M", localtime(&files[i].mtime));
+        printf("%s ", time_str);
+    }
+    printf("%s\n", files[i].name);  // Dosya adını yazdır
+}
+pthread_mutex_unlock(&list_mutex);
+
+     for (int i = 0; i < subdir_count; i++) {
         ThreadArgs *args = malloc(sizeof(ThreadArgs));
         if (!args) {
             perror("Failed to allocate memory for thread args");
