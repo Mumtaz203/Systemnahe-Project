@@ -6,8 +6,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
+#include <unistd.h>   
 #include "../include/file_operations.h"
 #include "../include/utils.h"
+#include "../include/threading.h"
 
 extern int show_last_modified;
 extern int show_list_mode;
@@ -15,6 +18,7 @@ extern int recursive_mode;
 
 #define MAX_FILES 1024  
 #define MAX_SUBDIRS 100  
+#define MAX_THREADS 10  
 
 typedef struct {
     char name[1024];
@@ -25,6 +29,11 @@ typedef struct {
     uid_t uid;
     gid_t gid;
 } FileEntry;
+
+extern pthread_mutex_t list_mutex;
+extern pthread_mutex_t thread_count_mutex;
+extern int active_threads;
+extern void* thread_function(void *arg);
 
 int compare_mtime(const void *a, const void *b) {
     FileEntry *fileA = (FileEntry *)a;
@@ -49,7 +58,10 @@ void print_permissions(mode_t mode) {
     printf((mode & S_IXOTH) ? "x " : "- ");
 }
 
+// ✅ Dizin içeriğini tarama fonksiyonu (Thread güvenli)
 int traverse_directory(const char *path) {
+    usleep(5000);  
+
     DIR *dir = opendir(path);
     if (dir == NULL) {
         perror("Failed to open directory");
@@ -60,7 +72,9 @@ int traverse_directory(const char *path) {
     struct stat file_stat;
     char *subdirs[MAX_SUBDIRS];
     int subdir_count = 0;
-    
+    pthread_t threads[MAX_THREADS];
+    int thread_index = 0;
+
     FileEntry *files = malloc(MAX_FILES * sizeof(FileEntry));
     if (!files) {
         perror("Memory allocation failed");
@@ -86,7 +100,7 @@ int traverse_directory(const char *path) {
                 files[file_count].gid = file_stat.st_gid;
                 file_count++;
             }
-            
+
             if (recursive_mode && S_ISDIR(file_stat.st_mode)) {
                 if (subdir_count < MAX_SUBDIRS) {
                     subdirs[subdir_count] = strdup(full_path);
@@ -96,41 +110,55 @@ int traverse_directory(const char *path) {
         }
     }
     closedir(dir);
-    
+
     if (show_last_modified) {
         qsort(files, file_count, sizeof(FileEntry), compare_mtime);
     } else {
         qsort(files, file_count, sizeof(FileEntry), compare_name);
     }
 
+    pthread_mutex_lock(&list_mutex);
+    printf("\n🔍 Entering directory (threaded): %s\n", path);
+
     for (int i = 0; i < file_count; i++) {
-        if (show_list_mode || show_last_modified) {
-            if (show_list_mode) {
-                print_permissions(files[i].mode);
-                printf(" %3ld ", (long)files[i].nlink);
-                struct passwd *pw = getpwuid(files[i].uid);
-                struct group *gr = getgrgid(files[i].gid);
-                printf(" %-8s %-8s %8lld ", pw->pw_name, gr->gr_name, (long long)files[i].size);
-            }
-            if (show_last_modified) {
-                char time_str[20];
-                strftime(time_str, sizeof(time_str), "%b %d %H:%M:%S %Y", localtime(&files[i].mtime));
-                printf(" %s ", time_str);
-            }
-            printf("%s\n", files[i].name);
-        } else {
-            printf("%s\n", files[i].name);
+        if (show_list_mode) {  
+            print_permissions(files[i].mode);
+            printf(" %3ld ", (long)files[i].nlink);
+            struct passwd *pw = getpwuid(files[i].uid);
+            struct group *gr = getgrgid(files[i].gid);
+            printf(" %-8s %-8s %8lld ", pw->pw_name, gr->gr_name, (long long)files[i].size);
         }
+        if (show_last_modified) {  
+            char time_str[20];
+            strftime(time_str, sizeof(time_str), "%b %d %H:%M:%S %Y", localtime(&files[i].mtime));
+            printf(" %s ", time_str);
+        }
+        printf("%s\n", files[i].name);
     }
-    fflush(stdout);  // 📌 Çıktıyı hemen yazdır!
-    
+    pthread_mutex_unlock(&list_mutex);
+
     for (int i = 0; i < subdir_count; i++) {
-        printf("\n🔍 Entering directory: %s\n", subdirs[i]);
-        fflush(stdout);  // 📌 Pipeline desteği için çıktıyı hemen yaz!
-        traverse_directory(subdirs[i]);
+        ThreadArgs *args = malloc(sizeof(ThreadArgs));
+        if (!args) {
+            perror("Failed to allocate memory for thread args");
+            continue;
+        }
+        strncpy(args->path, subdirs[i], sizeof(args->path) - 1);
+        args->path[sizeof(args->path) - 1] = '\0';
+
+        if (pthread_create(&threads[thread_index], NULL, thread_function, args) == 0) {
+            thread_index++;
+        } else {
+            perror("Failed to create thread");
+            free(args);
+        }
         free(subdirs[i]);
     }
-    
+
+    for (int i = 0; i < thread_index; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
     free(files);
     return 0;
 }
