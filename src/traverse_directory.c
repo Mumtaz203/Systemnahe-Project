@@ -36,10 +36,12 @@ extern int active_threads;
 extern void* thread_function(void *arg);
 
 int compare_mtime(const void *a, const void *b) {
-    FileEntry *fileA = (FileEntry *)a;
-    FileEntry *fileB = (FileEntry *)b;
-    return (fileB->mtime - fileA->mtime);
+    const FileEntry *fileA = (const FileEntry *)a;
+    const FileEntry *fileB = (const FileEntry *)b;
+
+    return (fileB->mtime - fileA->mtime);  // AZALAN sıralama için B - A olmalı
 }
+
 
 int compare_name(const void *a, const void *b) {
     return strcmp(((FileEntry *)a)->name, ((FileEntry *)b)->name);
@@ -111,11 +113,14 @@ int traverse_directory(const char *path) {
     }
     closedir(dir);
 
-    if (show_last_modified) {
-        qsort(files, file_count, sizeof(FileEntry), compare_mtime);
-        } else {
-        qsort(files, file_count, sizeof(FileEntry), compare_name);
-    }
+  if (show_last_modified) {
+    
+    qsort(files, file_count, sizeof(FileEntry), compare_mtime);
+} else {
+    
+    qsort(files, file_count, sizeof(FileEntry), compare_name);
+}
+
 
     pthread_mutex_lock(&list_mutex);
 printf("\n🔍 Entering directory : %s\n", path);

@@ -20,7 +20,7 @@ void parse_arguments(int argc, char *argv[], int *num_dirs, char *directories[])
         } else if (strcmp(argv[i], "-l") == 0) {
             printf("List mode enabled.\n");
             show_list_mode = 1;
-        } else if (strcmp(argv[i], "-T") == 0) {
+        } else if (strcmp(argv[i], "-t") == 0) {
             printf("Show last modification time enabled.\n");
             show_last_modified = 1;
         } else if (argv[i][0] == '-') {
