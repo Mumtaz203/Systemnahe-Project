@@ -44,7 +44,7 @@ int compare_mtime(const void *a, const void *b) {
 int compare_name(const void *a, const void *b) {
     return strcmp(((FileEntry *)a)->name, ((FileEntry *)b)->name);
 }
-  
+
 void print_permissions(mode_t mode) {
     printf((S_ISDIR(mode)) ? "d" : "-");
     printf((mode & S_IRUSR) ? "r" : "-");
@@ -58,7 +58,7 @@ void print_permissions(mode_t mode) {
     printf((mode & S_IXOTH) ? "x " : "- ");
 }
 
-// Dizin içeriğini tarama fonksiyonu (Thread güvenli)
+//  Dizin içeriğini tarama fonksiyonu (Thread güvenli)
 int traverse_directory(const char *path) {
     usleep(5000);
 
@@ -67,7 +67,6 @@ int traverse_directory(const char *path) {
         perror("Failed to open directory");
         return -1;
     }
-    
     struct dirent *entry;
     struct stat file_stat;
     char *subdirs[MAX_SUBDIRS];
@@ -88,9 +87,10 @@ int traverse_directory(const char *path) {
 
         char full_path[1024];
         snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
-    
-    if (stat(full_path, &file_stat) == 0) {
+
+        if (stat(full_path, &file_stat) == 0) {
             if (file_count < MAX_FILES) {
+                strcpy(files[file_count].name, entry->d_name);
                 strcpy(files[file_count].name, entry->d_name);
                 files[file_count].mtime = file_stat.st_mtime;
                 files[file_count].mode = file_stat.st_mode;
@@ -110,15 +110,15 @@ int traverse_directory(const char *path) {
         }
     }
     closedir(dir);
-    
+
     if (show_last_modified) {
         qsort(files, file_count, sizeof(FileEntry), compare_mtime);
-    } else {
+        } else {
         qsort(files, file_count, sizeof(FileEntry), compare_name);
     }
 
     pthread_mutex_lock(&list_mutex);
-printf("\n🔍 Entering directory (threaded): %s\n", path);
+printf("\n🔍 Entering directory : %s\n", path);
 
 // "total" hesaplama (dosya boyutu yerine `st_blocks` kullan)
 long long total_blocks = 0;
@@ -131,7 +131,6 @@ for (int i = 0; i < file_count; i++) {
         total_blocks += file_stat.st_blocks;
     }
 }
-
 printf("total %lld\n", total_blocks / 2);  // `ls -l` formatındaki "total" (512-byte blokları 1K'ya çevirerek)
 
 // Dosya listeleme işlemi
@@ -151,10 +150,11 @@ for (int i = 0; i < file_count; i++) {
 }
 pthread_mutex_unlock(&list_mutex);
 
-     for (int i = 0; i < subdir_count; i++) {
+
+    for (int i = 0; i < subdir_count; i++) {
         ThreadArgs *args = malloc(sizeof(ThreadArgs));
         if (!args) {
-            perror("Failed to allocate memory for thread args");
+         perror("Failed to allocate memory for thread args");
             continue;
         }
         strncpy(args->path, subdirs[i], sizeof(args->path) - 1);
@@ -172,7 +172,6 @@ pthread_mutex_unlock(&list_mutex);
     for (int i = 0; i < thread_index; i++) {
         pthread_join(threads[i], NULL);
     }
-
     free(files);
     return 0;
 }

@@ -8,11 +8,10 @@ TEST_DIR = tests
 SRCS = $(SRC_DIR)/data_structures.c $(SRC_DIR)/file_operations.c $(SRC_DIR)/main.c $(SRC_DIR)/threading.c $(SRC_DIR)/utils.c $(SRC_DIR)/traverse_directory.c
 OBJS = $(SRCS:.c=.o)
 
-
 OBJS_TEST = $(SRC_DIR)/data_structures.o $(SRC_DIR)/threading.o $(SRC_DIR)/utils.o $(SRC_DIR)/traverse_directory.o $(SRC_DIR)/file_operations.o
 
 TARGET = program
-TEST_TARGET = test_program
+TEST_TARGET = test_program  # Systemnahe-Project içinde oluşturulacak
 
 TEST_LIBS = -lcunit
 
@@ -24,14 +23,13 @@ $(TARGET): $(OBJS)
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Test derlemesi
+# Test derlemesi (test_program artık Systemnahe-Project içinde)
 $(TEST_TARGET): $(TEST_DIR)/test_cases.c $(OBJS_TEST)
-	$(CC) $(CFLAGS) -o $@ $(TEST_DIR)/test_cases.c $(OBJS_TEST) $(TEST_LIBS)
+	$(CC) $(CFLAGS) -o $(TEST_TARGET) $(TEST_DIR)/test_cases.c $(OBJS_TEST) $(TEST_LIBS)
 
 test: $(TEST_TARGET)
 	./$(TEST_TARGET)
 	make clean_test  
-
 
 clean_test:
 	rm -f $(TEST_TARGET)
