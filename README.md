@@ -37,7 +37,7 @@ It can list directory contents, recursively explore subdirectories, and utilize 
 -if you want to execute the program anywhere in terminal
 1. cd Systemnahe-Project 
 2. sudo cp ./program /usr/local/bin/
-3. program [options] <directory>
+3. program [options] [directory]
 
 
 ### Usage Examples:
