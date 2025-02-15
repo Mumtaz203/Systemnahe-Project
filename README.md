@@ -32,7 +32,7 @@ It can list directory contents, recursively explore subdirectories, and utilize 
 2. make all (or make)
 
 -You can execute the program in Systemnahe-Project directory using:
-1. ./program [options] <directory>
+1. ./program [options] [directory]
 
 -if you want to execute the program anywhere in terminal
 1. cd Systemnahe-Project 
