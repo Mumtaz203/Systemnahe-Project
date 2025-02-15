@@ -19,44 +19,42 @@ int run_command(const char *cmd, char *output, size_t size) {
 // ✅ **./program -t . ile ls -t benzer mi?**
 void test_flag_t() {
     char output[BUFFER_SIZE], expected[BUFFER_SIZE];
-
-    // 📌 `ls -t` çıktısını **gerçek terminal formatıyla** alıyoruz.
-    run_command("ls -t --format=horizontal", expected, sizeof(expected));
+     run_command("ls -t --format=horizontal", expected, sizeof(expected));
     run_command("./program -t .", output, sizeof(output));  
 
     printf("\n==============================\n");
     printf("Test: Time Mode (-t)\n");
     printf("==============================\n");
-    printf("\n🔹 Expected (ls -t):\n%s\n", expected);
-    printf("\n🔹 Actual (./program -t .):\n%s\n", output);
+    printf("\n\U0001F539 Expected (ls -t):\n%s\n", expected);
+    printf("\n\U0001F539 Actual (./program -t .):\n%s\n", output);
 }
 
 // ✅ **./program -l . ile ls -l benzer mi?**
 void test_flag_l() {
     char output[BUFFER_SIZE], expected[BUFFER_SIZE];
-    run_command("./program -l .", output, sizeof(output));
     run_command("ls -l", expected, sizeof(expected));
+    run_command("./program -l .", output, sizeof(output));
 
     printf("\n==============================\n");
     printf("Test: List Mode (-l)\n");
     printf("==============================\n");
-    printf("\n🔹 Expected (ls -l):\n%s\n", expected);
-    printf("\n🔹 Actual (./program -l .):\n%s\n", output);
+    printf("\n\U0001F539 Expected (ls -l):\n%s\n", expected);
+    printf("\n\U0001F539 Actual (./program -l .):\n%s\n", output);
 }
 
 // ✅ **./program -R . ile ls -R benzer mi?**
 void test_flag_R() {
     char output[BUFFER_SIZE], expected[BUFFER_SIZE];
 
-    // 📌 `ls -R` çıktısını **tam olarak sistemde nasıl gözüküyorsa** o şekilde alıyoruz.
-    run_command("ls -R", expected, sizeof(expected));
+    // 📌 `ls -R` çıktısını tam olarak sistemde nasıl görünüyorsa o şekilde alıyoruz.
+    run_command("ls -R --format=horizontal", expected, sizeof(expected));
     run_command("./program -R .", output, sizeof(output));
 
     printf("\n==============================\n");
     printf("Test: Recursive Mode (-R)\n");
     printf("==============================\n");
-    printf("\n🔹 Expected (ls -R):\n%s\n", expected);
-    printf("\n🔹 Actual (./program -R .):\n%s\n", output);
+    printf("\n\U0001F539 Expected (ls -R):\n%s\n", expected);
+    printf("\n\U0001F539 Actual (./program -R .):\n%s\n", output);
 }
 
 // 📌 **Main fonksiyonu - Tüm testleri çalıştırır**
