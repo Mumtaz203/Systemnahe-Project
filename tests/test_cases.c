@@ -3,20 +3,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFFER_SIZE 8192  // Büyük çıktı için artırıldı
+#define BUFFER_SIZE 8192  
 
-// 📌 Programı çalıştırıp çıktıyı almak için fonksiyon
+
 int run_command(const char *cmd, char *output, size_t size) {
     FILE *fp = popen(cmd, "r");
     if (!fp) return -1;
 
     size_t bytesRead = fread(output, 1, size - 1, fp);
-    output[bytesRead] = '\0';  // Null-terminate
+    output[bytesRead] = '\0';  
     pclose(fp);
     return 0;
 }
 
-// ✅ **./program -t . ile ls -t benzer mi?**
+
 void test_flag_t() {
     char output[BUFFER_SIZE], expected[BUFFER_SIZE];
      run_command("ls -t --format=horizontal", expected, sizeof(expected));
@@ -29,8 +29,7 @@ void test_flag_t() {
     printf("\n\U0001F539 Actual (./program -t .):\n%s\n", output);
 }
 
-// ✅ **./program -l . ile ls -l benzer mi?**
-void test_flag_l() {
+  void test_flag_l() {
     char output[BUFFER_SIZE], expected[BUFFER_SIZE];
     run_command("ls -l", expected, sizeof(expected));
     run_command("./program -l .", output, sizeof(output));
@@ -42,11 +41,11 @@ void test_flag_l() {
     printf("\n\U0001F539 Actual (./program -l .):\n%s\n", output);
 }
 
-// ✅ **./program -R . ile ls -R benzer mi?**
+
 void test_flag_R() {
     char output[BUFFER_SIZE], expected[BUFFER_SIZE];
 
-    // 📌 `ls -R` çıktısını tam olarak sistemde nasıl görünüyorsa o şekilde alıyoruz.
+    
     run_command("ls -R --format=horizontal", expected, sizeof(expected));
     run_command("./program -R .", output, sizeof(output));
 
@@ -57,7 +56,7 @@ void test_flag_R() {
     printf("\n\U0001F539 Actual (./program -R .):\n%s\n", output);
 }
 
-// 📌 **Main fonksiyonu - Tüm testleri çalıştırır**
+
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("LS Similarity Tests", 0, 0);

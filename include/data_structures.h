@@ -8,7 +8,7 @@ typedef struct Node {
 
 Node* create_node(const char *data);
 void free_list(Node *head);
-void append_node(Node **head, const char *data);  // 💡 Eksik fonksiyon tanımı eklendi
+void append_node(Node **head, const char *data);  
 
 #endif
 

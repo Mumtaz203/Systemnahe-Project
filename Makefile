@@ -11,11 +11,11 @@ OBJS = $(SRCS:.c=.o)
 OBJS_TEST = $(SRC_DIR)/data_structures.o $(SRC_DIR)/threading.o $(SRC_DIR)/utils.o $(SRC_DIR)/traverse_directory.o $(SRC_DIR)/file_operations.o
 
 TARGET = program
-TEST_TARGET = test_program  # Systemnahe-Project içinde oluşturulacak
+TEST_TARGET = test_program  
 
 TEST_LIBS = -lcunit
 
-all: $(TARGET) $(TEST_TARGET)  # make all ile test programı da derlenecek
+all: $(TARGET) $(TEST_TARGET)  
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS)
@@ -23,7 +23,7 @@ $(TARGET): $(OBJS)
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Test derlemesi (test_program artık Systemnahe-Project içinde)
+
 $(TEST_TARGET): $(TEST_DIR)/test_cases.c $(OBJS_TEST)
 	$(CC) $(CFLAGS) -o $(TEST_TARGET) $(TEST_DIR)/test_cases.c $(OBJS_TEST) $(TEST_LIBS)
 

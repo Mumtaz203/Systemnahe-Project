@@ -28,7 +28,7 @@ void* thread_function(void *arg) {
     return NULL;
 }
 
-void create_threads(int num_dirs, char *directories[]) {  // ✅ ⁠ main.c ⁠ bunu çağırıyor
+void create_threads(int num_dirs, char *directories[]) {  
     pthread_t threads[MAX_THREADS];
     int thread_index = 0;
 

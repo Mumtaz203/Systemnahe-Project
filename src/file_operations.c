@@ -20,21 +20,21 @@ void traverse_directorysimple(const char *path) {
     closedir(dir);
 }
 
-int write_to_file(const char *filename, const char *data) { // `void` yerine `int`
+int write_to_file(const char *filename, const char *data) {
     FILE *file = fopen(filename, "w");
     if (!file) {
         perror("Failed to open file for writing");
-        return -1;  // Hata durumunda -1 döndür
+        return -1;  
     }
 
     if (fprintf(file, "%s", data) < 0) {
         perror("Failed to write to file");
         fclose(file);
-        return -1;  // Yazma hatası durumunda -1 döndür
+        return -1;  
     }
 
     fclose(file);
-    return 0;  // Başarı durumunda 0 döndür
+    return 0; 
 }
 
 

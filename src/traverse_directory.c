@@ -72,10 +72,10 @@ int get_terminal_width() {
 void print_files_in_columns(FileEntry *files, int file_count) {
     int terminal_width = get_terminal_width();
     int max_name_length = 0;
-    int padding = 2;  // LS formatına uygun boşluk
+    int padding = 2;  
     int count = 0;
 
-    // **Dosya isimlerinin maksimum uzunluğunu belirle**
+    
     for (int i = 0; i < file_count; i++) {
         int len = strlen(files[i].name);
         if (len > max_name_length) {
@@ -83,23 +83,23 @@ void print_files_in_columns(FileEntry *files, int file_count) {
         }
     }
 
-    // **Sütun genişliğini belirle**
+    
     int col_width = max_name_length + padding;
     int cols = terminal_width / col_width;
 
-    // **Dosya adlarını LS formatına uygun hizala**
+    
     for (int i = 0; i < file_count; i++) {
         printf("%-*s", col_width, files[i].name);
         count++;
 
-        // **Sütun sınırına ulaştığında satır atla**
+        
         if (count >= cols) {
             printf("\n");
             count = 0;
         }
     }
 
-    // **Satırda boşluk bırakma hatasını önle**
+    
     if (count > 0) {
         printf("\n");
     }
