@@ -22,32 +22,32 @@ It can list directory contents, recursively explore subdirectories, and utilize 
 
 ### **Steps**
 - Clone the repository:
-git clone https://github.com/Mumtaz203/Systemnahe-Project.git
+1. git clone https://github.com/Mumtaz203/Systemnahe-Project.git
 
 - Once cloned, navigate into the project directory:
-cd Systemnahe-Project
+1. cd Systemnahe-Project
 
 - Compile the program:
-1.make clean
-2.make
+1. make clean
+2. make
 
 -You can execute the program in Systemnahe-Project directory using:
-./program [options] <directory>
+1. ./program [options] <directory>
 
 -if you want to execute the program anywhere in terminal
-cd Systemnahe-Project 
-sudo cp ./program /usr/local/bin/
-program [options] <directory>
+1. cd Systemnahe-Project 
+2. sudo cp ./program /usr/local/bin/
+3. program [options] <directory>
 
 
 ### Usage Examples:
 
-program src     (Lists files in the "src" directory)
-program -l src  (Lists files with detailed attributes (permissions, owner, size))
-program -T src  (Lists files sorted by last modification time)
-program -R src  (Recursively lists all subdirectories and files)
-program -l -T src (Combines detailed listing with sorting by modification time)
-program -R Systemnahe-Project | grep "\.c$" (Recursively lists all subdirectories and files , and finds lines that ends with .c)
+1. program src     (Lists files in the "src" directory)
+2. program -l src  (Lists files with detailed attributes (permissions, owner, size))
+3. program -T src  (Lists files sorted by last modification time)
+4. program -R src  (Recursively lists all subdirectories and files)
+5. program -l -T src (Combines detailed listing with sorting by modification time)
+6. program -R Systemnahe-Project | grep "\.c" (Recursively lists all subdirectories and files , and finds lines that includes .c)
 
 ##  Running Tests
 The project includes unit tests written using CUnit.
@@ -69,9 +69,9 @@ This project took more time than we thought , we gave a lot of efford but we sti
 ## Contributors
 This project was developed by:
 
-Mümtaz Erdogan
-Erkin Caliskan
-Samet Avci
-Umut Avci
+- Mümtaz Erdogan 
+- Erkin Caliskan
+- Samet Avci
+- Umut Avci
 
 
