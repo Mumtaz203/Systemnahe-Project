@@ -52,13 +52,14 @@ program -R Systemnahe-Project | grep "\.c$" (Recursively lists all subdirectorie
 ##  Running Tests
 The project includes unit tests written using CUnit.
 - if you want to run tests you have to install CUnit library and then compile tests:
-1.sudo apt-get install libcunit1-dev (to install CUnit library).
-2.cd Systemnahe-Project (to enter main Project directory).
-3.cd tests (to enter tests directory).
-4.gcc -o test_program test_cases.c -lcunit (to compile tests).
-5.sudo cp ./test_program /usr/local/bin/ (to use tests in Systemnahe-Project)
-6.cd .. (now you are in Systemnahe-Project directory)
-test_program(we couldn't implement a failed or passed test , we wanted to compare results of ls and our program.)
+1. sudo apt-get install libcunit1-dev (to install CUnit library).
+2. cd Systemnahe-Project (to enter main Project directory).
+3. cd tests (to enter tests directory).
+4. gcc -o test_program test_cases.c -lcunit (to compile tests).
+6. cd .. (now you are in Systemnahe-Project directory)
+7. make clean
+8. make 
+9. make test (we couldn't implement a failed or passed test , we wanted to compare results of ls and our program.)
 
 
 ## Feedback About Project

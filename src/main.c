@@ -11,30 +11,33 @@ extern int show_list_mode;
 extern int recursive_mode;
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("Usage: ./program [options] <directory1> <directory2> ...\n");
-        return 1;
-    }
-
     char *directories[10];
     int num_dirs = 0;
+    int stdin_mode = 0;
 
-    parse_arguments(argc, argv, &num_dirs, directories);
-
-    if (!isatty(STDIN_FILENO)) {  // Kullanıcı stdin’den veri gönderiyor mu?
+    // ✅ **Pipeline girdisini kontrol et**
+    if (!isatty(STDIN_FILENO)) {  // Eğer stdin’den veri geliyorsa
         char stdin_input[1024];
-        if (fgets(stdin_input, sizeof(stdin_input), stdin)) {
-            stdin_input[strcspn(stdin_input, "\n")] = 0;  // Yeni satır karakterini temizle
+        while (fgets(stdin_input, sizeof(stdin_input), stdin)) {
+            stdin_input[strcspn(stdin_input, "\n")] = '\0';  // Yeni satır karakterini temizle
             directories[num_dirs] = strdup(stdin_input);
             num_dirs++;
+            stdin_mode = 1;  // ✅ stdin’den veri alındı
         }
     }
 
+    // ✅ **Komut satırından gelen argümanları işle**
+    if (argc > 1 && !stdin_mode) {  
+        parse_arguments(argc, argv, &num_dirs, directories);
+    }
+
+    // ✅ **Eğer directory varsa traverse_directory başlat**
     if (num_dirs > 0) {
         create_threads(num_dirs, directories);
     } else {
-        printf("No directories specified.\n");
+        fprintf(stderr, "No directories specified.\n");
     }
 
     return 0;
 }
+
