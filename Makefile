@@ -15,7 +15,7 @@ TEST_TARGET = test_program  # Systemnahe-Project içinde oluşturulacak
 
 TEST_LIBS = -lcunit
 
-all: $(TARGET)
+all: $(TARGET) $(TEST_TARGET)  # make all ile test programı da derlenecek
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS)
